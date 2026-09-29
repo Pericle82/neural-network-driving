@@ -15,8 +15,6 @@ jobs:
           for nb in notebooks/*.py; do
             uv run jupytext --to ipynb --execute "$nb" -o "/tmp/$(basename "$nb" .py).ipynb"
           done
-        env:
-          MPLBACKEND: Agg
 
   ui:
     runs-on: ubuntu-latest

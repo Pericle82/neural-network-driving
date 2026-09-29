@@ -19,6 +19,7 @@ from sim.track import Track, build_track
 from .protocol import CarMsg, InputMsg, State, Stats
 
 DEMO_SPEED = 180.0  # unità/s dell'auto fantasma
+RESPAWN_AFTER = 1.5  # secondi da "morta" prima di ripartire dal via
 
 
 def _implemented(fn, *args) -> bool:
@@ -43,6 +44,7 @@ class World:
         self.car = car_mod.Car(x=x, y=y, heading=h)
         self.t = 0.0
         self._demo_s = 0.0
+        self._dead_for = 0.0
         probe = car_mod.Car(x=x, y=y, heading=h)
         self.mode = "manual" if _implemented(probe.step, car_mod.Controls(), 0.0) else "demo"
         self.has_sensors = _implemented(sensors_mod.read_sensors, x, y, h, self.walls)
@@ -62,6 +64,10 @@ class World:
             if car_mod.collides(self.car, self.walls):
                 self.car.alive = False
                 self.car.speed = 0.0
+        else:
+            self._dead_for += dt
+            if self._dead_for >= RESPAWN_AFTER:
+                self.reset()
 
     def _demo_step(self, dt: float) -> None:
         """Auto fantasma: scorre la linea centrale a velocità costante."""
