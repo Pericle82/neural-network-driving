@@ -1,0 +1,3 @@
+# I notebook si versionano come file .py leggibili (formato "percent").
+# Aprendo il .py da JupyterLab, Jupytext crea l'.ipynb accanto (ignorato da git).
+formats = "ipynb,py:percent"

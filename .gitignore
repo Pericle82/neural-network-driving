@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# i notebook si versionano come .py (Jupytext): gli .ipynb sono locali
+*.ipynb
+.ipynb_checkpoints/
+
+ui/node_modules/
+ui/dist/
+.DS_Store
