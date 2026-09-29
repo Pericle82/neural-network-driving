@@ -1,6 +1,10 @@
 name: ci
 
-on: [push, pull_request]
+# Solo sui branch: i tag step-NN-start hanno test rossi per costruzione.
+on:
+  push:
+    branches: [main, solution]
+  pull_request:
 
 jobs:
   python:
