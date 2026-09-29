@@ -58,7 +58,23 @@ class Car:
         Nota: con y verso il basso, heading che cresce = curva a DESTRA sullo schermo.
         Verifica: make test STEP=1
         """
-        raise NotImplementedError("tappa 1: Car.step")
+        steering = float(np.clip(controls.steering, -1.0, 1.0))
+        throttle = float(np.clip(controls.throttle, 0.0, 1.0))
+        brake = float(np.clip(controls.brake, 0.0, 1.0))
+
+        drag = DRAG * (HANDBRAKE_DRAG if controls.handbrake else 1.0)
+        accel = ACCELERATION * throttle - BRAKE_DECEL * brake - drag * self.speed
+        self.speed = float(np.clip(self.speed + accel * dt, 0.0, MAX_SPEED))
+
+        grip = 1.0 - (1.0 - STEER_AT_MAX_SPEED) * self.speed / MAX_SPEED
+        delta = steering * MAX_STEER * grip
+        omega = self.speed / WHEELBASE * np.tan(delta)
+        if controls.handbrake:
+            omega *= HANDBRAKE_TURN
+
+        self.heading = float((self.heading + omega * dt + np.pi) % (2 * np.pi) - np.pi)
+        self.x += float(np.cos(self.heading)) * self.speed * dt
+        self.y += float(np.sin(self.heading)) * self.speed * dt
 
     def corners(self) -> np.ndarray:
         """I 4 vertici del rettangolo dell'auto, forma (4, 2). Fornito."""
@@ -76,7 +92,11 @@ def segments_intersect(p1: np.ndarray, p2: np.ndarray, q1: np.ndarray, q2: np.nd
       i due segmenti si intersecano se q1 e q2 stanno da parti opposte di p1-p2
       E p1 e p2 stanno da parti opposte di q1-q2.
     """
-    raise NotImplementedError("tappa 1: segments_intersect")
+    def side(o: np.ndarray, a: np.ndarray, b: np.ndarray) -> float:
+        # > 0 se b sta a sinistra di o→a, < 0 se a destra, 0 se allineato
+        return float((a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]))
+
+    return (side(p1, p2, q1) * side(p1, p2, q2) < 0) and (side(q1, q2, p1) * side(q1, q2, p2) < 0)
 
 
 def collides(car: Car, walls: np.ndarray) -> bool:
@@ -85,4 +105,12 @@ def collides(car: Car, walls: np.ndarray) -> bool:
     TODO(step-01): controlla i 4 lati di `car.corners()` contro tutti i `walls`
     (forma (M, 2, 2), vedi Track.walls). Suggerimento: scarta prima i muri lontani.
     """
-    raise NotImplementedError("tappa 1: collides")
+    # Filtro grossolano: tieni solo i muri il cui punto medio è entro portata.
+    mid = walls.mean(axis=1)
+    half_len = np.linalg.norm(walls[:, 1] - walls[:, 0], axis=1) / 2
+    reach = half_len + np.hypot(CAR_LENGTH, CAR_WIDTH) / 2
+    near = walls[np.linalg.norm(mid - [car.x, car.y], axis=1) <= reach]
+
+    c = car.corners()
+    edges = [(c[i], c[(i + 1) % 4]) for i in range(4)]
+    return any(segments_intersect(a, b, w[0], w[1]) for w in near for a, b in edges)
