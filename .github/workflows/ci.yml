@@ -1,6 +1,10 @@
 name: ci
 
-on: [push, pull_request]
+# Solo sui branch: i tag step-NN-start hanno test rossi per costruzione.
+on:
+  push:
+    branches: [main, solution]
+  pull_request:
 
 jobs:
   python:
@@ -15,8 +19,6 @@ jobs:
           for nb in notebooks/*.py; do
             uv run jupytext --to ipynb --execute "$nb" -o "/tmp/$(basename "$nb" .py).ipynb"
           done
-        env:
-          MPLBACKEND: Agg
 
   ui:
     runs-on: ubuntu-latest

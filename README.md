@@ -58,7 +58,7 @@ git diff step-01-start step-01-solution -- sim/    # la soluzione, se ti blocchi
 | 6 | Campione e replay | `server/`, `notebooks/` | il video originale ricreato |
 | 7 | Estensioni | libere | reti più profonde, NEAT, PPO |
 
-Le tappe oltre la 0 sono in preparazione.
+Disponibili: tappe 0 e 1. Le altre sono in preparazione.
 
 ## Struttura
 
@@ -85,6 +85,23 @@ Regole del progetto:
 | `make dev` | server di simulazione + UI |
 | `make notebook` | JupyterLab sulla cartella `notebooks/` |
 | `make test` / `make test STEP=N` | tutti i test / solo quelli della tappa N |
+
+## Per chi mantiene il corso
+
+Le soluzioni complete stanno sul branch `solution`. Ogni parte da far scrivere allo studente
+è racchiusa tra `# BEGIN SOLUTION(step-NN) <messaggio>` e `# END SOLUTION` (`//` in TypeScript).
+I file `tests/test_stepNN.py` e `notebooks/NN_*.py` compaiono dalla tappa NN in poi.
+
+```bash
+git checkout solution
+# ...modifica, poi commit...
+uv run python tools/make_steps.py          # rigenera step-NN-start/solution e sposta main
+git push origin solution
+git push --force origin main 'refs/tags/step-*'
+```
+
+Un bug corretto su `solution` si propaga così a tutte le tappe. Le date dei commit sono fisse:
+se una tappa non cambia, il suo hash resta lo stesso.
 
 ## Licenza
 

@@ -16,7 +16,10 @@ ACCELERATION = 220.0     # unità/s²
 BRAKE_DECEL = 420.0      # unità/s²
 DRAG = 0.6               # attrito proporzionale alla velocità (1/s)
 WHEELBASE = 26.0         # passo: distanza tra asse anteriore e posteriore
-MAX_STEER = 0.55         # angolo massimo delle ruote anteriori (rad)
+MAX_STEER = 0.55         # angolo massimo delle ruote anteriori (rad), da fermi
+STEER_AT_MAX_SPEED = 0.4 # a velocità massima lo sterzo utile scende al 40%
+HANDBRAKE_TURN = 1.6     # freno a mano: il posteriore scivola, l'auto gira di più...
+HANDBRAKE_DRAG = 3.0     # ...ma perde velocità molto più in fretta
 CAR_LENGTH = 30.0
 CAR_WIDTH = 14.0
 
@@ -43,13 +46,16 @@ class Car:
         """Avanza la fisica di `dt` secondi.
 
         TODO(step-01): implementa il modello cinematico "a bicicletta".
-          1. Aggiorna la velocità: + ACCELERATION*throttle, - BRAKE_DECEL*brake,
-             - DRAG*speed; limita a [0, MAX_SPEED].
-          2. Angolo delle ruote: delta = steering * MAX_STEER.
-          3. Velocità angolare: omega = speed / WHEELBASE * tan(delta).
-             Freno a mano: riduci l'aderenza (per esempio omega *= 1.6 e più attrito)
-             per ottenere la derapata.
-          4. heading += omega*dt; x += cos(heading)*speed*dt; y += sin(heading)*speed*dt.
+          1. Limita i comandi: steering in [-1, 1], throttle e brake in [0, 1].
+          2. Velocità: + ACCELERATION*throttle - BRAKE_DECEL*brake - attrito*speed,
+             con attrito = DRAG (moltiplicato per HANDBRAKE_DRAG col freno a mano).
+             Limita a [0, MAX_SPEED]: niente retromarcia.
+          3. Sterzo: più vai veloce, meno puoi sterzare (come su un'auto vera):
+             delta = steering * MAX_STEER * (1 - (1 - STEER_AT_MAX_SPEED) * speed / MAX_SPEED)
+          4. Velocità angolare: omega = speed / WHEELBASE * tan(delta);
+             col freno a mano moltiplica per HANDBRAKE_TURN.
+          5. heading += omega*dt; x += cos(heading)*speed*dt; y += sin(heading)*speed*dt.
+        Nota: con y verso il basso, heading che cresce = curva a DESTRA sullo schermo.
         Verifica: make test STEP=1
         """
         raise NotImplementedError("tappa 1: Car.step")
