@@ -70,6 +70,7 @@ export function TrackView({ hello, stateRef, follow }: Props) {
       // ── Scie ──
       if (car?.alive) {
         const last = trail.at(-1)
+        if (last && Math.hypot(last[0] - car.x, last[1] - car.y) > 60) trail.length = 0 // ripartenza dal via
         if (!last || Math.hypot(last[0] - car.x, last[1] - car.y) > 3) trail.push([car.x, car.y])
         if (trail.length > 160) trail.shift()
       }
